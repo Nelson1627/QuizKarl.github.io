@@ -9,9 +9,17 @@
 <body>
     <div class="container">
         <h1>Quiz sobre Karl Marx</h1>
+        <div id="user-info" style="display: none;">
+            <span id="user-name" style="color: blue"></span>
+        </div>
         <div id="quiz"></div>
         <button id="submit">Enviar Respuestas</button>
         <div id="result"></div>
+        <div id="timer">Tiempo restante: <span id="time">20</span> segundos</div>
+        <div id="ranking" style="display: none;">
+            <h2>Ranking de Puntajes</h2>
+            <ol id="ranking-list"></ol>
+        </div>
     </div>
     <script src="script.js"></script>
 </body>

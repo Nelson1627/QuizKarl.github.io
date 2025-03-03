@@ -84,11 +84,26 @@ const quizData = [
 const quiz = document.getElementById("quiz");
 const submitButton = document.getElementById("submit");
 const resultDisplay = document.getElementById("result");
-
+const userInfo = document.getElementById("user-info");
+const userNameDisplay = document.getElementById("user-name");
+const timerDisplay = document.getElementById("time");
+const rankingList = document.getElementById("ranking-list");
+const rankingDisplay = document.getElementById("ranking");
 let currentQuestionIndex = 0;
 let score = 0;
+let timer;
+const timeLimit = 20;
+
+function startQuiz() {
+    const name = prompt("Por favor, ingresa tu nombre:");
+    const career = prompt("Por favor, ingresa tu carrera:");
+    userNameDisplay.textContent = `${name} (${career})`;
+    userInfo.style.display = "block";
+    loadQuestion();
+}
 
 function loadQuestion() {
+    resetTimer();
     const currentQuestion = quizData[currentQuestionIndex];
     quiz.innerHTML = `
         <div class="question">${currentQuestion.question}</div>
@@ -97,9 +112,33 @@ function loadQuestion() {
         <label><input type="radio" name="answer" value="c"> ${currentQuestion.c}</label>
         <label><input type="radio" name="answer" value="d"> ${currentQuestion.d}</label>
     `;
+    highlightQuestion();
+}
+
+function highlightQuestion() {
+    const questionElement = document.querySelector(".question");
+    questionElement.classList.add("highlight");
+    setTimeout(() => {
+        questionElement.classList.remove("highlight");
+    }, 1000);
+}
+
+function resetTimer() {
+    clearInterval(timer);
+    let timeLeft = timeLimit;
+    timerDisplay.textContent = timeLeft;
+    timer = setInterval(() => {
+        timeLeft--;
+        timerDisplay.textContent = timeLeft;
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            calculateScore(); // Si se acaba el tiempo, se envían las respuestas
+        }
+    }, 1000);
 }
 
 function calculateScore() {
+    clearInterval(timer);
     const answers = document.querySelectorAll("input[name='answer']");
     let selectedAnswer;
     answers.forEach((answer) => {
@@ -126,7 +165,24 @@ function showResult() {
         <h2>Tu puntaje es: ${score} de ${quizData.length}</h2>
         <p>${score / quizData.length >= 0.6 ? "¡Bien hecho!" : "Inténtalo de nuevo!"}</p>
     `;
+    saveScore();
+    displayRanking();
+}
+
+function saveScore() {
+    const name = userNameDisplay.textContent;
+    const scores = JSON.parse(localStorage.getItem("scores")) || [];
+    scores.push({ name, score });
+    scores.sort((a, b) => b.score - a.score); // Ordenar de mayor a menor
+    if (scores.length > 5) scores.splice(5); // Mantener solo los 5 mejores
+    localStorage.setItem("scores", JSON.stringify(scores));
+}
+
+function displayRanking() {
+    const scores = JSON.parse(localStorage.getItem("scores")) || [];
+    rankingList.innerHTML = scores.map(entry => `<li>${entry.name}: ${entry.score}</li>`).join("");
+    rankingDisplay.style.display = "block";
 }
 
 submitButton.addEventListener("click", calculateScore);
-loadQuestion();
+startQuiz();
